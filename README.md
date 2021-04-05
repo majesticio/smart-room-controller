@@ -8,11 +8,11 @@ I am creating a smart room contoller that uses hue lights and wemo switches. It 
 
 This project utilizes:
 
-* Teensy 3.3 microcontroller
+* Teensy 3.2 microcontroller
 * Breadboard
 * Wemo switches
 * Phillips Hue lights
 
 ##Links
 
-Here is a link to my [Hackster.io](https://www.hackster.io/)
+Here is a link to my [hackster.io](https://www.hackster.io/) page.
