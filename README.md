@@ -15,4 +15,4 @@ This project utilizes:
 
 ##Links
 
-Here is a link to my [Hackster.io](hackster.io)
+Here is a link to my [Hackster.io](https://www.hackster.io/)
