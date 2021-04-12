@@ -221,7 +221,7 @@ void loop() {
       buttonState = true; 
       turnOnNeoPixel();  
       setHue(3,true,HueRainbow[hueColor],position,255);  
-      delay(1000); //lil delay so the sensor doesn't get tripped again
+      delay(200); //lil delay so the sensor doesn't get tripped again
     }
     if ((time-tenSeconds)>10000) { //setting timer for 10 seconds. change if needed
       tenSeconds = millis();     
@@ -422,12 +422,6 @@ void turnOnNeoPixel() {
 
 void autoFan() { // wemo switch control, turns on fan when above 73 degrees F.
   
-//  tempC = bme.readTemperature(); //deg C
-//  pressPA = bme.readPressure(); //pascals
-//  humidRH = bme.readHumidity(); //%RH
-//  tempF = map(tempC,0,100,32,212);
-//  mmHG = pressPA/3386.389;
-
   if(tempF > 73.0) {
     my_wemo_dev.switchON(fan);
   }
@@ -438,13 +432,7 @@ void autoFan() { // wemo switch control, turns on fan when above 73 degrees F.
   
 void autoHumidity() { // wemo switch control, turns on humidifier when below 20% Humidity.
   
-//  tempC = bme.readTemperature(); //deg C
-//  pressPA = bme.readPressure(); //pascals
-//  humidRH = bme.readHumidity(); //%RH
-//  tempF = map(tempC,0,100,32,212);
-//  mmHG = pressPA/3386.389;
-
-  if(humidRH < 20.0) {
+  if(humidRH < 12.0) {
     my_wemo_dev.switchON(kettle);
   }
   else {
