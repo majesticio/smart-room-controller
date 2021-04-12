@@ -35,6 +35,6 @@ This project utilizes:
 * BME280 temp humidity and pressure sensor
 * 4 buttons 
 
-##Links
+## Links
 
 Here is a link to my [hackster.io](https://www.hackster.io/) page.
