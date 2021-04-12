@@ -139,7 +139,7 @@ void setup(){
   pinMode(4, OUTPUT);
   digitalWrite(4, HIGH);
 
-//  Ethernet.begin(mac);
+  Ethernet.begin(mac);
 //  delay(200);          //ensure Serial Monitor is up and running           
 //  printIP();
 //  Serial.printf("LinkStatus: %i  \n",Ethernet.linkStatus());
@@ -190,7 +190,10 @@ void loop() {
     case 2: //select brightness, display value 
       displayText(position,"Selected brightness\nvalue was");
       turnOnNeoPixel();
-      setHueLights();
+      if ((time-displayTimeout)>1000) {
+        displayTimeout = millis();
+        setHueLights();
+      }
       break;
       
     case 3: //display color adjustment 
@@ -201,7 +204,10 @@ void loop() {
     
     case 4: //select color, display value
     turnOnNeoPixel();
-    setHueLights();
+    if ((time-displayTimeout)>1000) {
+        displayTimeout = millis();
+        setHueLights();
+    }
     displayText(hueColor,"Selected color value\nwas");
     break;
     
@@ -233,7 +239,7 @@ void loop() {
   
 void click() { //encoder button click action
   buttonState = !buttonState;
-  Serial.printf("buttonState is %i\n",buttonState);
+//  Serial.printf("buttonState is %i\n",buttonState);
   setHueLights();
   turnOnNeoPixel();
 }
