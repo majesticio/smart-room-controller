@@ -29,7 +29,7 @@
 #define LOGO_HEIGHT   16
 #define LOGO_WIDTH    16
 
-const int displayTimeout;
+int displayTimeout;
 const int kettle = 3;
 const int fan = 2;
 byte bmeAddress = 0x76; //i2c address
@@ -57,10 +57,14 @@ int dialHue;
 int lastPosition;
 const int GREENBUTTONPIN = 23;
 const int REDBUTTONPIN = 22;
+const int BLUEBUTTONPIN = 21;
+const int YELLOWBUTTONPIN = 20;
 bool greenState;
 bool redState;
 int hueColor;
 int i;
+bool yellowState;
+bool blueState;
 bool lastGreenState;
 int touchlessColor;
 const int NEOPIXEL_PIN = 0; // pin to neopixel.neopixel indicates what color the hue lights are.
@@ -80,6 +84,8 @@ Adafruit_NeoPixel pixel(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 OneButton button1 (buttonPin , false ); // encoder button
 OneButton greenButton (GREENBUTTONPIN, false );
 OneButton redButton (REDBUTTONPIN, false );
+OneButton yellowButton (YELLOWBUTTONPIN, false );
+OneButton blueButton (BLUEBUTTONPIN, false );
 
 void setup(){ 
   
@@ -113,7 +119,6 @@ void setup(){
 //activate pins for LEDs and devices
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an OUTPUT
   pinMode(echoPin, INPUT); // Sets the echoPin as an INPUT
-  pinMode (buttonPin,INPUT_PULLUP);
   pinMode (GREENLED,OUTPUT);
   pinMode (REDLED,OUTPUT);
 
@@ -121,6 +126,9 @@ void setup(){
   button1.attachClick(click); 
   greenButton.attachClick(greenClick);
   redButton.attachClick(redClick);
+  yellowButton.attachClick(yellowClick);
+  blueButton.attachClick(blueClick);
+  
   hueColor = 0;
   mode = 1;
   Serial.begin(9600);
@@ -139,13 +147,22 @@ void setup(){
 // initialize conditions and variables
   buttonState = false;
   redState = false;
+  yellowState = false;
+  blueState = false;
   lastGreenState = false;
 
 //kick off neopixel
   pixel.begin();
   pixel.show();
   pixel.setBrightness(20);
-}
+  
+  digitalWrite(GREENLED,LOW);
+  digitalWrite(REDLED,HIGH);
+  turnOnNeoPixel();
+
+  displayLargeText("MAJESTIC \nI/O");
+  delay(1500);
+} // end setup
 
 void loop() {
   
@@ -153,6 +170,8 @@ void loop() {
   button1.tick (); // was button1 clicked? 
   greenButton.tick();
   redButton.tick();
+  yellowButton.tick();
+  blueButton.tick();
   setEncoderPosition(); //function binds encoder from 0-255,if there is a change it uses setHueLghts()
   getUltraSonicVal(); // returns value from the ultrasonic sensor
   touchlessColor = map(ultraSonicVal,0,255,0,6); // changes value from 0-255 to 0-6 (colors of rainbow)
@@ -164,30 +183,30 @@ void loop() {
     
     case 1: //display brightness adjustment
       if (ultraSonicVal%5==0 && (ultraSonicVal != lastUltraSonicVal)) {
-        displayText(ultraSonicVal,"select bright value with touchless sensor (0-255)");
+        displayText(ultraSonicVal,"Select bright value\nwith touchless sensor (0-255) value =");
       }
       break;
       
     case 2: //select brightness, display value 
-      displayText(position,"Selected brightness value");
+      displayText(position,"Selected brightness\nvalue was");
       turnOnNeoPixel();
       setHueLights();
       break;
       
     case 3: //display color adjustment 
     if (ultraSonicVal%5==0 && (ultraSonicVal != lastUltraSonicVal)) {
-        displayText(touchlessColor,"select color value with touchless sensor (0-6)");
+        displayText(touchlessColor,"Select color value\nwith touchless sensor (0-6) value =");
     }
     break;
     
     case 4: //select color, display value
     turnOnNeoPixel();
     setHueLights();
-    displayText(hueColor,"Selected color value");
+    displayText(hueColor,"Selected color value\nwas");
     break;
     
     case 5: //turns on motion sensor for the hue lights
-    displayText(buttonState, "Motion Sensor Lights in position");
+    displayText(buttonState, "Motion Sensor Lights\nin position");
     if (ultraSonicVal<255) {
       digitalWrite(GREENLED,HIGH);
       digitalWrite(REDLED,LOW);
@@ -201,9 +220,9 @@ void loop() {
       digitalWrite(GREENLED,LOW);
       digitalWrite(REDLED,HIGH);
       buttonState = false;
-      setHue(3,false,0,0,0); // turn off hue
-      pixel.clear(); // turn off neopixel too
-      pixel.show();
+      turnOffHueLights(); // turn off hue lights
+//      pixel.clear(); // turn off neopixel too
+//      pixel.show();
     }
     break;
     };
@@ -216,7 +235,32 @@ void click() { //encoder button click action
   setHueLights();
   turnOnNeoPixel();
 }
-
+void yellowClick() {
+  yellowState = !yellowState;
+  if (yellowState) {
+    Serial.print("Fan is ON!\n");
+    displayLargeText("Fan \nis ON!!!");
+//    my_wemo_dev.switchON(fan);
+  }
+  else {
+    Serial.print("Fan is OFF!\n");
+    displayLargeText("Fan \nis OFF!!!");
+//    my_wemo_dev.switchOFF(fan);
+  }
+}
+void blueClick() {
+  blueState =! blueState;
+  if (blueState) {
+    Serial.print("kettle is ON!\n");
+    displayLargeText("Kettle \nis ON!!!");
+//    my_wemo_dev.switchON(kettle);
+  }
+  else {
+    Serial.print("kettle is OFF!\n");
+      displayLargeText("Kettle \nis OFF!!!");
+//    my_wemo_dev.switchOFF(kettle);
+  }
+}
 void greenClick() { //green button, color select
   
   if (hueColor <6 ) {
@@ -229,8 +273,7 @@ void greenClick() { //green button, color select
   setHueLights();
   displayText(hueColor,"Selected hue color");
   turnOnNeoPixel();
-  delay(1000);
-
+  delay(1500); //pause display for 2 seconds
 }
 
 void redClick() { //red button, touchless select. changes 'switch' case in void loop
@@ -241,7 +284,6 @@ void redClick() { //red button, touchless select. changes 'switch' case in void 
   if (mode > 5) {
     mode = 1;
   }
-  redState  = !redState;
 }
 
 void printIP() {
@@ -257,13 +299,16 @@ void setHueLights() { // controls hue lights. indicates on/off with encoder's LE
   if (buttonState) {
       digitalWrite(GREENLED,HIGH);
       digitalWrite(REDLED,LOW);
-      setHue(3,true,HueRainbow[hueColor],position,255); // set brightness w/encoder
-      
+      setHue(1,true,HueRainbow[hueColor],position,255); // set brightness w/encoder
+      setHue(2,true,HueRainbow[hueColor],position,255);
+      setHue(3,true,HueRainbow[hueColor],position,255);
+      setHue(4,true,HueRainbow[hueColor],position,255);
+      setHue(5,true,HueRainbow[hueColor],position,255);
     }
     else {
       digitalWrite(GREENLED,LOW);
       digitalWrite(REDLED,HIGH);
-      setHue(3,false,0,0,0);
+      turnOffHueLights();
       
   /*  setHue function needs 5 parameters
    *  int bulb - this is the bulb number
@@ -273,6 +318,14 @@ void setHueLights() { // controls hue lights. indicates on/off with encoder's LE
    *  int - saturation - from 0 to 255
    */
 }
+}
+
+void turnOffHueLights() {
+  setHue(1,false,0,0,0);
+  setHue(2,false,0,0,0);
+  setHue(3,false,0,0,0);
+  setHue(4,false,0,0,0);
+  setHue(5,false,0,0,0);
 }
 
 int getUltraSonicVal() {
@@ -331,28 +384,41 @@ void displayText(int desiredOutput,char desiredString[]) { //takes args and prin
   display.display();
 }
 
+void displayLargeText(char desiredString[]) { //takes args and prints them to OLED
+
+  display.clearDisplay();
+  display.setCursor(0,0);             // Start cursor at top-left corner
+  display.setRotation(0) ;
+  display.setTextSize(2); 
+  display.setTextColor(SSD1306_WHITE); // Draw 'inverse' text
+  display.printf("%s", desiredString);
+  display.display();
+  display.startscrollright(0x00, 0x07);
+  delay(1500);
+  display.stopscroll();
+}
+
 void turnOnNeoPixel() {
 
-  if (buttonState) {
     pixel.clear();
     pixel.show();
     pixel.setPixelColor(0,rainbow[hueColor]);
-    pixel.setBrightness(20); //lastUltraSonicVal for brightness
+    pixel.setBrightness(20); //lastUltraSonicVal for brightness?
     pixel.show();
-  }
-  else {
-    pixel.clear();
-    pixel.show();
-  }
+//  }
+//  else {
+//    pixel.clear();
+//    pixel.show();
+//  }
 }
 
 void autoFan() { // wemo switch control, turns on fan when above 73 degrees F.
   
-  tempC = bme.readTemperature(); //deg C
-  pressPA = bme.readPressure(); //pascals
-  humidRH = bme.readHumidity(); //%RH
-  tempF = map(tempC,0,100,32,212);
-  mmHG = pressPA/3386.389;
+//  tempC = bme.readTemperature(); //deg C
+//  pressPA = bme.readPressure(); //pascals
+//  humidRH = bme.readHumidity(); //%RH
+//  tempF = map(tempC,0,100,32,212);
+//  mmHG = pressPA/3386.389;
 
   if(tempF > 73.0) {
     my_wemo_dev.switchON(fan);
@@ -364,11 +430,11 @@ void autoFan() { // wemo switch control, turns on fan when above 73 degrees F.
   
 void autoHumidity() { // wemo switch control, turns on humidifier when below 20% Humidity.
   
-  tempC = bme.readTemperature(); //deg C
-  pressPA = bme.readPressure(); //pascals
-  humidRH = bme.readHumidity(); //%RH
-  tempF = map(tempC,0,100,32,212);
-  mmHG = pressPA/3386.389;
+//  tempC = bme.readTemperature(); //deg C
+//  pressPA = bme.readPressure(); //pascals
+//  humidRH = bme.readHumidity(); //%RH
+//  tempF = map(tempC,0,100,32,212);
+//  mmHG = pressPA/3386.389;
 
   if(humidRH < 20.0) {
     my_wemo_dev.switchON(kettle);
@@ -385,5 +451,7 @@ void bmeReadTempF_HumidRH() { // sets BME variables for displayText
   humidRH = bme.readHumidity(); //%RH
   tempF = map(tempC,0,100,32,212);
   mmHG = pressPA/3386.389;
-  Serial.printf("Temp is %0.1f%c Farenheit,\nPressure is %0.1f mmHG,\nand there is %0.1f%c relative humidity\n",tempF, degree, mmHG, humidRH, percent);
+  if (time%300==0) {
+    Serial.printf("Temp is %0.1f%c Farenheit,\nPressure is %0.1f mmHG,\nand there is %0.1f%c relative humidity\n",tempF, degree, mmHG, humidRH, percent);
+  }
 }
