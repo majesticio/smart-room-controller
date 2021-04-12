@@ -18,6 +18,8 @@ I am creating a smart room contoller that uses hue lights and wemo switches. It 
 - On/off with encoder button
 - Fan on/off with a button
 - Humidifier on/off with a button
+- 
+![majestic i/o smart-room-controller](https://github.com/majesticio/smart-room-controller/blob/main/pics/fullshotwithscreen.jpg)
 
 ## Details
 
