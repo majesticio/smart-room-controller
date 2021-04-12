@@ -37,4 +37,4 @@ This project utilizes:
 
 ## Links
 
-Here is a link to my [hackster.io](https://www.hackster.io/) page.
+Here is a link to my [hackster.io](https://www.hackster.io/germain_campman/smart-room-controller-d98104) page.
