@@ -167,16 +167,16 @@ void setup(){
 void loop() {
   
   time = millis(); //start time in milliseconds
-  button1.tick (); // was button1 clicked? 
+  
+  button1.tick(); // was button1 clicked? 
   greenButton.tick();
   redButton.tick();
   yellowButton.tick();
   blueButton.tick();
   setEncoderPosition(); //function binds encoder from 0-255,if there is a change it uses setHueLghts()
   getUltraSonicVal(); // returns value from the ultrasonic sensor
+  
   touchlessColor = map(ultraSonicVal,0,255,0,6); // changes value from 0-255 to 0-6 (colors of rainbow)
-//  autoFan(); // turns on wemo switch for the fan
-//  autoHumidity(); //same for humidity
   bmeReadTempF_HumidRH(); // displays temp in F and % humidity to the OLED screen
 
   switch(mode) { //modes for the 'touchless select' button. brightness, color, and motion sensor
@@ -205,8 +205,10 @@ void loop() {
     displayText(hueColor,"Selected color value\nwas");
     break;
     
-    case 5: //turns on motion sensor for the hue lights
-    displayText(buttonState, "Motion Sensor Lights\nin position");
+    case 5: //turns on motion sensor for the hue lights and auto wemo controls
+    displayText(buttonState, "Auto selected.\nTemp/RH wemo switch\nMotionLights on/off");
+    autoFan(); // turns on wemo switch for the fan
+    autoHumidity(); //same for humidity
     if (ultraSonicVal<255) {
       digitalWrite(GREENLED,HIGH);
       digitalWrite(REDLED,LOW);
@@ -240,12 +242,12 @@ void yellowClick() {
   if (yellowState) {
     Serial.print("Fan is ON!\n");
     displayLargeText("Fan \nis ON!!!");
-//    my_wemo_dev.switchON(fan);
+    my_wemo_dev.switchON(fan);
   }
   else {
     Serial.print("Fan is OFF!\n");
     displayLargeText("Fan \nis OFF!!!");
-//    my_wemo_dev.switchOFF(fan);
+    my_wemo_dev.switchOFF(fan);
   }
 }
 void blueClick() {
@@ -253,12 +255,12 @@ void blueClick() {
   if (blueState) {
     Serial.print("kettle is ON!\n");
     displayLargeText("Kettle \nis ON!!!");
-//    my_wemo_dev.switchON(kettle);
+    my_wemo_dev.switchON(kettle);
   }
   else {
     Serial.print("kettle is OFF!\n");
-      displayLargeText("Kettle \nis OFF!!!");
-//    my_wemo_dev.switchOFF(kettle);
+    displayLargeText("Kettle \nis OFF!!!");
+    my_wemo_dev.switchOFF(kettle);
   }
 }
 void greenClick() { //green button, color select
