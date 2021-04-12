@@ -3,13 +3,13 @@
 ## Overview
 I am creating a smart room contoller that uses hue lights and wemo switches. It features:
 
-** Automatic mode ** 
+**Automatic mode** 
 - temperature activated fan
 - humidity activated humidifier
 - motion activated lighting
 - neopixel hue color indicator
 
-** Manual mode **
+**Manual mode**
 
 - Set brightness with 'touchless' dial
 - Set color with 'touchless' dial
